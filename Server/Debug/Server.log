@@ -1,0 +1,4 @@
+﻿  server.cpp
+     Creating library C:\Users\p.anvesh\source\repos\OfficeClash\Debug\Server.lib and object C:\Users\p.anvesh\source\repos\OfficeClash\Debug\Server.exp
+LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Server.vcxproj -> C:\Users\p.anvesh\source\repos\OfficeClash\Debug\Server.dll

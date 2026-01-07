@@ -1,0 +1,8 @@
+﻿server.obj : error LNK2019: unresolved external symbol enet_initialize referenced in function "public: __cdecl Server::Server(void)" (??0Server@@QEAA@XZ)
+server.obj : error LNK2019: unresolved external symbol enet_deinitialize referenced in function "public: __cdecl Server::~Server(void)" (??1Server@@QEAA@XZ)
+server.obj : error LNK2019: unresolved external symbol enet_host_create referenced in function "public: __cdecl Server::Server(void)" (??0Server@@QEAA@XZ)
+server.obj : error LNK2019: unresolved external symbol enet_host_destroy referenced in function "public: __cdecl Server::~Server(void)" (??1Server@@QEAA@XZ)
+server.obj : error LNK2019: unresolved external symbol enet_host_service referenced in function "public: void __cdecl Server::checkConnectionStatus(struct _ENetEvent)" (?checkConnectionStatus@Server@@QEAAXU_ENetEvent@@@Z)
+MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+C:\Users\p.anvesh\source\repos\OfficeClash\Dependencies\enet-1.3.17\Debug\\enet.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+C:\Users\p.anvesh\source\repos\OfficeClash\x64\Debug\Server.exe : fatal error LNK1120: 6 unresolved externals
