@@ -5,73 +5,73 @@ Server::Server()
 	if (enet_initialize() != 0)
 	{
 		std::cerr << "Failed to Initialize ENet" << std::endl;
+		std::exit(EXIT_FAILURE);
 	}
-	std::cout << "ENet Initialization Successfull" << std::endl;
-	
-
-	server_m = enet_host_create(NULL, 10, 1, 0, 0);
-	if (!server_m)
-	{
-		std::cout << "Failed to Create ENet Server" << std::endl;
-		return;
-	}
-	std::cout << "ENet Server Initialization Successfull" << std::endl;
-
-	address_m.host = ENET_HOST_ANY;
-	address_m.port = 1234;
 }
 
 Server::~Server()
 {
-
-	enet_host_destroy(server_m);
+	if(server_m)
+		enet_host_destroy(server_m);
+	
 	server_m = NULL;
 	enet_deinitialize();
+	std::cout << "SERVER DESTROYED" << std::endl;
 }
 
-bool Server::setHost()
+void Server::run()
 {
-	server_m = enet_host_create(&address_m, 10, 1, 0, 0);
-	
+	ENetAddress _address;
+	_address.host = ENET_HOST_ANY;
+	_address.port = 1234;
+
+	server_m = enet_host_create(&_address, 20, 2, 0, 0);
 	if (!server_m)
 	{
-		std::cerr << "Failed to create ENet Server" << std::endl;
-		return EXIT_FAILURE;
+		std::cout << "Failed to start ENet Server" << std::endl;
+		return;
 	}
 	std::cout << "********************* Server started... *********************" << std::endl;
-	std::cout << "Server Address: "<< address_m.host << std::endl;
-	std::cout << "Server Port: "<< address_m.port << std::endl;
+	std::cout << "Server Address: "<< _address.host << std::endl;
+	std::cout << "Server Port: "<< _address.port << std::endl;
 	std::cout << "*************************************************************" << std::endl;
+	std::cout << std::endl;
+	std::cout << "[SERVER] Listening on port " << _address.port << std::endl;
 
-	return 0;
-}
-
-
-void Server::checkConnectionStatus(ENetEvent _event)
-{
-	try
+	ENetEvent _event;
+	while (true)
 	{
-		while (true)
+		while (enet_host_service(server_m, &_event, 1000) > 0)  //if(==0)->timeout | if(>0)->evnet_recieved | if(<0)->error   <-- remember this
 		{
-			while (enet_host_service(server_m, &_event, 1000))
+			switch (_event.type)
 			{
-				switch (_event.type)
-				{
-				case ENET_EVENT_TYPE_CONNECT:
-					std::cout << "Client Connected From " << _event.peer->address.host << ":" << _event.peer->address.port << std::endl;
-					break;
-				case ENET_EVENT_TYPE_DISCONNECT:
-					std::cout << _event.peer->address.host + " Disconnected" << std::endl;
-					_event.peer->data = NULL;
-					break;
-				}
+			case ENET_EVENT_TYPE_CONNECT:
+				std::cout << "Client Connected From " << _event.peer->address.host << ":" << _event.peer->address.port << std::endl;
+				break;
+			case ENET_EVENT_TYPE_RECEIVE:
+				std::cout << "Message from Clinet: " << (char*)_event.packet->data << std::endl;
+				break;
+			case ENET_EVENT_TYPE_DISCONNECT:
+				std::cout << "Client Disconnected" << std::endl;
+				break;
 			}
 		}
 
 	}
-	catch (std::exception& ex)
-	{
-		std::string msg = "Exception Occured at Server : checkConnectionStatus -> ";
-		std::cerr << msg + ex.what();
-	}
+	std::cout << "waiting finished..." << std::endl;
+	
+	
+	return;
+}
+
+
+
+//****************************************** MAIN LOOP ******************************************//
+
+int main()
+{
+	Server _server;
+	_server.run();
+
+	return 0;
 }

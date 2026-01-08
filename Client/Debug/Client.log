@@ -1,3 +1,2 @@
 ﻿  client.cpp
-C:\Users\p.anvesh\source\repos\OfficeClash\Client\client.cpp(27,25): error C2065: 'client_address_m': undeclared identifier
-C:\Users\p.anvesh\source\repos\OfficeClash\Client\client.cpp(29,1): error C2143: syntax error: missing ';' before '}'
+  Client.vcxproj -> C:\Users\p.anvesh\source\repos\OfficeClash\Debug\Client.exe

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "enet/enet.h"
 
@@ -10,13 +11,23 @@ public:
 	Client();
 	~Client();
 
-	void setHostAddressPort(std::string& address, int port);
-	void checkConnectionStatus();
+public:
+	void setHostAddressPort(const ENetAddress& address);
+	bool checkConnectionStatus();
+	bool startMessaging();
+
+	
+private:
+	void setLocalClientIP();
+
 
 private:
-	ENetHost* client_m;
-	ENetPeer* peer_m;
-	ENetAddress address_m;
+	char client_ip[32];
+
+	ENetHost* client_m = nullptr;
+	ENetPeer* peer_m = nullptr;
+	ENetAddress serverAddress_m;
 	int host_port_m;
+	char server_ip[32];
 };
 

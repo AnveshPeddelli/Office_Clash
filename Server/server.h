@@ -10,12 +10,11 @@ public:
 	Server();
 	~Server();
 
-	bool setHost();
-	void checkConnectionStatus(ENetEvent _event);
+	void run();
 
 private:
-	ENetHost* server_m;
-	ENetAddress address_m;
+	ENetHost* server_m = nullptr;
+
 
 };
 
