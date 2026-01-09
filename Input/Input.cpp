@@ -1,9 +1,10 @@
-#include "Input.h"
+// Input.cpp : Defines the functions for the static library.
+//
 
-Input::Input()
-{
-}
+#include "pch.h"
+#include "framework.h"
 
-Input::~Input()
+// TODO: This is an example of a library function
+void fnInput()
 {
 }

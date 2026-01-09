@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -9,7 +11,7 @@ struct player
 	double y_pos;
 	int speed;
 	int healt;
-	
+
 	int request_id;
 	int request_time;
 };
