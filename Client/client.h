@@ -12,7 +12,7 @@ public:
 	~Client();
 
 public:
-	void setHostAddressPort(const ENetAddress& address);
+	void setHostAddressPort(const ENetAddress& address, std::string ip);
 	bool checkConnectionStatus();
 	bool startMessaging();
 

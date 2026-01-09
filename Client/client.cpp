@@ -33,11 +33,14 @@ Client::~Client()
 }
 
 
-void Client::setHostAddressPort(const ENetAddress& address)
+void Client::setHostAddressPort(const ENetAddress& address, std::string ip)
 {
 	serverAddress_m = address;
+	std::cout << "serverPort: " << serverAddress_m.port << std::endl;
+	//server_ip = ip.c_str();
 	client_m = enet_host_create(NULL, 1, 2, 0, 0);
-	enet_address_set_host(&serverAddress_m, server_ip);
+	auto stsa = enet_address_set_host(&serverAddress_m, ip.c_str());
+	std::cout << "Stats: " << stsa << std::endl;
 
 	if (!client_m)
 	{
@@ -49,7 +52,6 @@ void Client::setHostAddressPort(const ENetAddress& address)
 	//Setting local ip address for display purposes
 	setLocalClientIP();
 }
-
 
 bool Client::checkConnectionStatus()
 {
@@ -185,15 +187,15 @@ int main()
 
 	ENetHost cli;
 
+	address.port = port;
+	std::cout << "entered->ip: " << ip << std::endl;
+	std::cout << "entered->port: " << port << std::endl;
+
+	_client.setHostAddressPort(address, ip);
+	_client.checkConnectionStatus();
 	
-
-
-	_client.setHostAddressPort(address);
-	if (_client.checkConnectionStatus())
-	{
-		_client.startMessaging();
-
-	}
+	//_client.startMessaging();
+	
 
 
 	std::cout << "EXITED CLIENT CODE...\n";
