@@ -1,3 +1,3 @@
-﻿  client.cpp
-C:\Users\p.anvesh\source\repos\Git\Office_Clash\Client\client.cpp(188,11): warning C4101: 'cli': unreferenced local variable
-  Client.vcxproj -> C:\Users\p.anvesh\source\repos\Git\Office_Clash\x64\Debug\Client.exe
+﻿FXC : error X3501: 'main': entrypoint not found
+  
+  compilation failed; no code produced
