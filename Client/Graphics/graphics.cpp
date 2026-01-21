@@ -10,7 +10,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 	}
-	DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 bool Graphics::initWindow(HINSTANCE hInstance, int nCmdShow)
@@ -67,6 +67,16 @@ bool Graphics::initDirectX()
 
 	context->OMSetRenderTargets(1, &renderTarget, nullptr);
 
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = 1280.0f;
+	viewport.Height = 720.0f;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	context->RSSetViewports(1, &viewport);
+
 	return true;
 }
 
@@ -92,16 +102,16 @@ bool Graphics::initPipeline()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}, 
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
 	device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
 
 	//create vertex buffer (triangle geometry)
 	Vertex triangle[] = {
-		{  0.0f,  0.5f, 0.0f, 1, 0, 0, 1 },
-		{  0.5f, -0.5f, 0.0f, 0, 1, 0, 1 },
-		{ -0.5f, -0.5f, 0.0f, 0, 0, 1, 1 }
+		{  0.0f + posx,  0.5f + posy, 0.0f, 1, 0, 0, 1 },
+		{  0.5f + posx, -0.5f + posy, 0.0f, 0, 1, 0, 1 },
+		{ -0.5f + posx, -0.5f + posy, 0.0f, 0, 0, 1, 1 }
 	};
 
 
@@ -119,7 +129,8 @@ bool Graphics::initPipeline()
 	//Cleanup shader blobs
 	vsBlob->Release();
 	psBlob->Release();
-	errorBlob->Release();
+	if (errorBlob) errorBlob->Release();
+
 
 	return true;
 }
@@ -152,6 +163,23 @@ void Graphics::renderFrame()
 
 	context->VSSetShader(vertexShader, nullptr, 0);
 	context->PSSetShader(pixelShader, nullptr, 0);
+
+	float speed = 0.01f;
+	if (GetAsyncKeyState('W') & 0x8000) posy += speed;
+	if (GetAsyncKeyState('S') & 0x8000) posy -= speed;
+	if (GetAsyncKeyState('A') & 0x8000) posx -= speed;
+	if (GetAsyncKeyState('D') & 0x8000) posx += speed;
+	if (GetAsyncKeyState(' ') & 0x8000) posx += 0.2f;
+
+	camx = posx;
+	camy = posy;
+	Vertex triangle[] = {
+		{  0.0f - camx,  0.5f - camy, 0.0f, 1, 0, 0, 1 },
+		{  0.5f - camx, -0.5f - camy, 0.0f, 0, 1, 0, 1 },
+		{ -0.5f - camx, -0.5f - camy, 0.0f, 0, 0, 1, 1 }
+	};
+
+	context->UpdateSubresource(vertexBuffer, 0, nullptr, triangle, 0, 0);
 
 	context->Draw(3, 0);
 

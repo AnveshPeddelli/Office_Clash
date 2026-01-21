@@ -10,6 +10,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 		return -1;
 	if (!graphics.initDirectX())
 		return -1;
+	if (!graphics.initPipeline())
+		return -1;
 
 	while (graphics.isRunning())
 	{

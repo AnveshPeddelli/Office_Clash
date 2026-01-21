@@ -38,5 +38,10 @@ private:
 	ID3D11PixelShader* pixelShader = nullptr;
 	ID3D11InputLayout* inputLayout = nullptr;
 	ID3D11Buffer* vertexBuffer = nullptr;
+
+	float posx = 0.0f;
+	float posy = 0.0f;
+	float camx = 0.0f;
+	float camy = 0.0f;
 };
 

@@ -1,3 +1,2 @@
-﻿FXC : error X3501: 'main': entrypoint not found
-  
-  compilation failed; no code produced
+﻿  graphics.cpp
+  Client.vcxproj -> C:\Users\p.anvesh\source\repos\Git\Office_Clash\x64\Debug\Client.exe
