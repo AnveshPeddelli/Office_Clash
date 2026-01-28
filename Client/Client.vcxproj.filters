@@ -74,4 +74,7 @@
       <Filter>Source Files\Graphics</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

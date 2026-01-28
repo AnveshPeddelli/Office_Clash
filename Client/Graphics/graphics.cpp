@@ -65,7 +65,22 @@ bool Graphics::initDirectX()
 	device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
 	backBuffer->Release();
 
-	context->OMSetRenderTargets(1, &renderTarget, nullptr);
+	//context->OMSetRenderTargets(1, &renderTarget, nullptr);
+
+	//Depth Buffer Creation
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = 1280;
+	depthDesc.Height = 720;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	device->CreateTexture2D(&depthDesc, nullptr, &depthBuffer);
+	device->CreateDepthStencilView(depthBuffer, nullptr, &depthView);
+	
+
 
 	D3D11_VIEWPORT viewport = {};
 	viewport.TopLeftX = 0;
@@ -76,60 +91,64 @@ bool Graphics::initDirectX()
 	viewport.MaxDepth = 1.0f;
 
 	context->RSSetViewports(1, &viewport);
+	context->OMSetRenderTargets(1, &renderTarget, depthView);
+
 
 	return true;
 }
 
 bool Graphics::initPipeline()
 {
+
+	//Compile Shaders
 	ID3DBlob* vsBlob = nullptr;
 	ID3DBlob* psBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 
-	HRESULT hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
+	HRESULT hr = D3DCompileFromFile(L"C:/Users/p.anvesh/source/repos/Git/Office_Clash/Client/triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
 	if (FAILED(hr))
+	{
+		if (errorBlob)
+			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
 		return false;
-
+	}
 	hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &psBlob, &errorBlob);
 	if (FAILED(hr))
+	{
+		if (errorBlob)
+			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
 		return false;
+	}
 
-	//creating shaders
 	device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &vertexShader);
 	device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &pixelShader);
 
-	//input layout (matches vertex struct)
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}, 
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	//Input layout
+	D3D11_INPUT_ELEMENT_DESC layout[] = { 
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
 
-	//create vertex buffer (triangle geometry)
-	Vertex triangle[] = {
-		{  0.0f + posx,  0.5f + posy, 0.0f, 1, 0, 0, 1 },
-		{  0.5f + posx, -0.5f + posy, 0.0f, 0, 1, 0, 1 },
-		{ -0.5f + posx, -0.5f + posy, 0.0f, 0, 0, 1, 1 }
-	};
-
-
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(triangle);
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-	D3D11_SUBRESOURCE_DATA data = {};
-	data.pSysMem = triangle;
-
-	device->CreateBuffer(&bd, &data, &vertexBuffer);
-
-
-	//Cleanup shader blobs
 	vsBlob->Release();
 	psBlob->Release();
-	if (errorBlob) errorBlob->Release();
+
+	////Create STATIC triangle (centered at origin)
+	//Vertex triangle[3] = {
+	//	{ 0.0f,  0.5f, 0.0f, 1, 0, 0, 1},
+	//	{ 0.5f, -0.5f, 0.0f, 0, 1, 0, 1},
+	//	{-0.0f, -0.5f, 0.0f, 0, 0, 1, 1}
+	//};
+	
+	D3D11_BUFFER_DESC cbd = {};
+	cbd.Usage = D3D11_USAGE_DEFAULT;
+	cbd.ByteWidth = sizeof(CameraCB);
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	device->CreateBuffer(&cbd, nullptr, &cameraBuffer);
+
+	//Loading World Obj
+	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
 
 
 	return true;
@@ -150,38 +169,80 @@ bool Graphics::isRunning()
 
 void Graphics::renderFrame()
 {
+	//XMMATRIX world = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+
 	float clearColor[4] = { 0.1f, 0.1f, 0.25f, 1.0f };
 	context->ClearRenderTargetView(renderTarget, clearColor);
+
+	context->ClearDepthStencilView(depthView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	float speed = 0.01f;
+	if (GetAsyncKeyState('A') & 0x8000) yaw -= speed;
+	if (GetAsyncKeyState('D') & 0x8000) yaw += speed;
+	if (GetAsyncKeyState('W') & 0x8000) pitch += speed;
+	if (GetAsyncKeyState('S') & 0x8000) pitch -= speed;
+
+	//clamp pitch
+	pitch = max(-1.5f, min(1.5f, pitch));
+
+	//Spherical to Cartesian
+	camPos.x = distance * cosf(pitch) * sinf(yaw);
+	camPos.y = distance * sinf(pitch);
+	camPos.z = distance * cosf(pitch) * cosf(yaw);
+
+	// WORLD (scale huge OBJ down)
+	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
+
+	// VIEW
+	XMMATRIX view = XMMatrixLookAtLH(
+		XMLoadFloat3(&camPos),
+		XMLoadFloat3(&camTarget),
+		XMLoadFloat3(&camUp)
+	);
+
+	// PROJECTION
+	XMMATRIX proj = XMMatrixPerspectiveFovLH(
+		XM_PIDIV4,
+		1280.0f / 720.f,
+		0.1f,
+		5000.0f
+	);
+
+	// Upload to GPU
+	CameraCB cb;
+	XMStoreFloat4x4(&cb.world, DirectX::XMMatrixTranspose(worldMat));
+	XMStoreFloat4x4(&cb.view, DirectX::XMMatrixTranspose(view));
+	XMStoreFloat4x4(&cb.projection, XMMatrixTranspose(proj));
+
+	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cb, 0, 0);
+	context->VSSetConstantBuffers(0, 1, &cameraBuffer);
+	
+
+
 
 	//activating the shader pipeline
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	const WorldMesh& mesh = world.getMesh();
+
+	context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &stride, &offset);
 	context->IASetInputLayout(inputLayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	context->VSSetShader(vertexShader, nullptr, 0);
 	context->PSSetShader(pixelShader, nullptr, 0);
 
-	float speed = 0.01f;
-	if (GetAsyncKeyState('W') & 0x8000) posy += speed;
-	if (GetAsyncKeyState('S') & 0x8000) posy -= speed;
-	if (GetAsyncKeyState('A') & 0x8000) posx -= speed;
-	if (GetAsyncKeyState('D') & 0x8000) posx += speed;
-	if (GetAsyncKeyState(' ') & 0x8000) posx += 0.2f;
+	////TEMP CPU TRANSFORM (untill matrices)
+	//Vertex transformed[3] = {
+	//	{  0.0f - camx,  0.5f - camy, 0.0f, 1, 0, 0, 1 },
+	//	{  0.5f - camx, -0.5f - camy, 0.0f, 0, 1, 0, 1 },
+	//	{ -0.5f - camx, -0.5f - camy, 0.0f, 0, 0, 1, 1 }
+	//};
+	//
+	////context->UpdateSubresource(vertexBuffer, 0, nullptr, transformed, 0, 0);
 
-	camx = posx;
-	camy = posy;
-	Vertex triangle[] = {
-		{  0.0f - camx,  0.5f - camy, 0.0f, 1, 0, 0, 1 },
-		{  0.5f - camx, -0.5f - camy, 0.0f, 0, 1, 0, 1 },
-		{ -0.5f - camx, -0.5f - camy, 0.0f, 0, 0, 1, 1 }
-	};
-
-	context->UpdateSubresource(vertexBuffer, 0, nullptr, triangle, 0, 0);
-
-	context->Draw(3, 0);
+	context->Draw(mesh.vertexCount, 0);
 
 	swapChain->Present(1, 0);
 }

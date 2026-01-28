@@ -1,0 +1,33 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Build folders
+Debug/
+Release/
+x64/
+x86/
+build/
+out/
+
+# Binaries
+*.exe
+*.dll
+*.lib
+
+# vcpkg
+packages/
+vcpkg_installed/
+
+# Dependencies
+/Dependencies/
+
+# CMake/ temp <- not using currently
+CMakeFiles/
+CMakeCache.txt
+
+# Window Junk
+Thumbs.db

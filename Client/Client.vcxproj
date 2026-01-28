@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props" Condition="Exists('..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -174,7 +175,18 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.targets" Condition="Exists('..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props'))" />
+    <Error Condition="!Exists('..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.targets'))" />
+  </Target>
 </Project>
