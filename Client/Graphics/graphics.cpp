@@ -2,14 +2,38 @@
 #include <d3dcompiler.h>
 #pragma comment(lib, "d3dcompiler.lib")
 
+#include "../Input/input.h"
+
+
 //Window callback
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (msg == WM_DESTROY)
+	switch (msg)
 	{
+	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+	
+	case WM_MOUSEMOVE:
+		Input::OnMouseMove(lParam);
+		break;
+
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+		Input::OnMouseDown(wParam);
+		break;
+
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+		Input::OnMouseUp(wParam);
+		break;
+
+	case WM_MOUSEWHEEL:
+		Input::OnWheel(wParam);
+		break;
+		
 	}
+	
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
@@ -28,6 +52,7 @@ bool Graphics::initWindow(HINSTANCE hInstance, int nCmdShow)
 		return false;
 
 	ShowWindow(hwnd, nCmdShow);
+	Input::Init(hwnd);
 	return true;
 }
 
@@ -169,18 +194,32 @@ bool Graphics::isRunning()
 
 void Graphics::renderFrame()
 {
-	//XMMATRIX world = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+	//Input camera update
+	if (Input::IsMouseDown())
+	{
+		yaw += Input::GetDeltaX() * 0.005f;
+		pitch += Input::GetDeltaY() * 0.005f;
+	}
+
+	//Zoom (Mouse wheel)
+	distance -= Input::GetWheelDelta() * 5.0f;
+
+	//clamp values
+	pitch = max(-1.5f, min(1.5f, pitch));
+	distance = max(5.0f, min(500.0f, distance));
+
+	printf("Wheel: %f\n", Input::GetWheelDelta());
+
 
 	float clearColor[4] = { 0.1f, 0.1f, 0.25f, 1.0f };
 	context->ClearRenderTargetView(renderTarget, clearColor);
-
 	context->ClearDepthStencilView(depthView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	float speed = 0.01f;
+	/*float speed = 0.01f;
 	if (GetAsyncKeyState('A') & 0x8000) yaw -= speed;
 	if (GetAsyncKeyState('D') & 0x8000) yaw += speed;
 	if (GetAsyncKeyState('W') & 0x8000) pitch += speed;
-	if (GetAsyncKeyState('S') & 0x8000) pitch -= speed;
+	if (GetAsyncKeyState('S') & 0x8000) pitch -= speed;*/
 
 	//clamp pitch
 	pitch = max(-1.5f, min(1.5f, pitch));
@@ -245,6 +284,10 @@ void Graphics::renderFrame()
 	context->Draw(mesh.vertexCount, 0);
 
 	swapChain->Present(1, 0);
+
+
+	//Reset per-frame deltas
+	Input::EndFrame();
 }
 
 void Graphics::shutdown()
