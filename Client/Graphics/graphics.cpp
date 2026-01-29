@@ -90,8 +90,6 @@ bool Graphics::initDirectX()
 	device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
 	backBuffer->Release();
 
-	//context->OMSetRenderTargets(1, &renderTarget, nullptr);
-
 	//Depth Buffer Creation
 	D3D11_TEXTURE2D_DESC depthDesc = {};
 	depthDesc.Width = 1280;
@@ -188,8 +186,9 @@ bool Graphics::isRunning()
 
 void Graphics::renderFrame()
 {
+	Clear();
+	
 	camera.Update();
-
 	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
 	XMMATRIX view = camera.GetView();
 	XMMATRIX proj = camera.GetProjection(1280.0f / 720.f);
@@ -215,6 +214,8 @@ void Graphics::renderFrame()
 
 	context->VSSetShader(vertexShader, nullptr, 0);
 	context->PSSetShader(pixelShader, nullptr, 0);
+
+
 
 	////TEMP CPU TRANSFORM (untill matrices)
 	//Vertex transformed[3] = {
