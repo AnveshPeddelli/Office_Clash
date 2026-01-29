@@ -37,6 +37,12 @@
     <Filter Include="Source Files\World">
       <UniqueIdentifier>{ad498afe-3898-4cba-bf21-2f3560be6cab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{16ec6c72-9de2-4861-bef0-5fd72e5b0969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Camera">
+      <UniqueIdentifier>{40c19c23-a20e-4078-926f-bd671d7f0cc0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Network\client.h">
@@ -50,6 +56,9 @@
     </ClInclude>
     <ClInclude Include="World\world.h">
       <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera\camera.h">
+      <Filter>Header Files\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\camera.cpp">
+      <Filter>Source Files\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

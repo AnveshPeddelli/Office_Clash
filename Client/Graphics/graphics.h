@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include "../World/world.h"
 #include <DirectXMath.h>
+#include "../Camera/camera.h"
 
 #pragma comment(lib, "d3d11.lib")
 
@@ -30,7 +31,9 @@ public:
 	bool initPipeline();
 	bool isRunning();
 	void renderFrame();
+	void Clear();
 	void shutdown();
+	void FocusOnWorld();
 
 private:
 	HWND hwnd = nullptr;
@@ -53,14 +56,7 @@ private:
 	ID3D11Texture2D* depthBuffer = nullptr;
 	ID3D11DepthStencilView* depthView = nullptr;
 
-
-	XMFLOAT3 camPos = { 0.0f, 0.0f, -5.0f };
-	XMFLOAT3 camTarget = { 0.0f, 0.0f, 0.0f };
-	XMFLOAT3 camUp = { 0.0f, 1.0f, 0.0f };
-
-	float yaw = 0.0f;
-	float pitch = 0.0f;
-	float distance = 80.0f;
+	Camera camera;
 
 	//World Obj
 	World world;

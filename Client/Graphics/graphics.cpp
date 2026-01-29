@@ -159,12 +159,6 @@ bool Graphics::initPipeline()
 	vsBlob->Release();
 	psBlob->Release();
 
-	////Create STATIC triangle (centered at origin)
-	//Vertex triangle[3] = {
-	//	{ 0.0f,  0.5f, 0.0f, 1, 0, 0, 1},
-	//	{ 0.5f, -0.5f, 0.0f, 0, 1, 0, 1},
-	//	{-0.0f, -0.5f, 0.0f, 0, 0, 1, 1}
-	//};
 	
 	D3D11_BUFFER_DESC cbd = {};
 	cbd.Usage = D3D11_USAGE_DEFAULT;
@@ -194,58 +188,11 @@ bool Graphics::isRunning()
 
 void Graphics::renderFrame()
 {
-	//Input camera update
-	if (Input::IsMouseDown())
-	{
-		yaw += Input::GetDeltaX() * 0.005f;
-		pitch += Input::GetDeltaY() * 0.005f;
-	}
+	camera.Update();
 
-	//Zoom (Mouse wheel)
-	distance -= Input::GetWheelDelta() * 5.0f;
-
-	//clamp values
-	pitch = max(-1.5f, min(1.5f, pitch));
-	distance = max(5.0f, min(500.0f, distance));
-
-	printf("Wheel: %f\n", Input::GetWheelDelta());
-
-
-	float clearColor[4] = { 0.1f, 0.1f, 0.25f, 1.0f };
-	context->ClearRenderTargetView(renderTarget, clearColor);
-	context->ClearDepthStencilView(depthView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	/*float speed = 0.01f;
-	if (GetAsyncKeyState('A') & 0x8000) yaw -= speed;
-	if (GetAsyncKeyState('D') & 0x8000) yaw += speed;
-	if (GetAsyncKeyState('W') & 0x8000) pitch += speed;
-	if (GetAsyncKeyState('S') & 0x8000) pitch -= speed;*/
-
-	//clamp pitch
-	pitch = max(-1.5f, min(1.5f, pitch));
-
-	//Spherical to Cartesian
-	camPos.x = distance * cosf(pitch) * sinf(yaw);
-	camPos.y = distance * sinf(pitch);
-	camPos.z = distance * cosf(pitch) * cosf(yaw);
-
-	// WORLD (scale huge OBJ down)
 	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
-
-	// VIEW
-	XMMATRIX view = XMMatrixLookAtLH(
-		XMLoadFloat3(&camPos),
-		XMLoadFloat3(&camTarget),
-		XMLoadFloat3(&camUp)
-	);
-
-	// PROJECTION
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(
-		XM_PIDIV4,
-		1280.0f / 720.f,
-		0.1f,
-		5000.0f
-	);
+	XMMATRIX view = camera.GetView();
+	XMMATRIX proj = camera.GetProjection(1280.0f / 720.f);
 
 	// Upload to GPU
 	CameraCB cb;
@@ -256,9 +203,6 @@ void Graphics::renderFrame()
 	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cb, 0, 0);
 	context->VSSetConstantBuffers(0, 1, &cameraBuffer);
 	
-
-
-
 	//activating the shader pipeline
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -297,4 +241,17 @@ void Graphics::shutdown()
 	if (context) context->Release();
 	if (device) device->Release();
 	if (hwnd) DestroyWindow(hwnd);
+}
+
+void Graphics::Clear()
+{
+	float clearColor[4] = { 0.1f, 0.1f, 0.25f, 1.0f };
+	context->ClearRenderTargetView(renderTarget, clearColor);
+	context->ClearDepthStencilView(depthView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+}
+
+void Graphics::FocusOnWorld()
+{
+	XMFLOAT3 center = world.GetCenter();
+	camera.Focus(center);
 }

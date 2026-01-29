@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera\camera.h" />
     <ClInclude Include="Graphics\graphics.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
@@ -161,6 +162,7 @@
     <ClInclude Include="World\world.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera\camera.cpp" />
     <ClCompile Include="Graphics\graphics.cpp" />
     <ClCompile Include="Input\input.cpp" />
     <ClCompile Include="Main.cpp" />
