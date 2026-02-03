@@ -1,13 +1,15 @@
 #include "world.h"
+#include "player.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <algorithm>
 
+#include <iostream>
+
 bool World::loadObj(ID3D11Device* device, const char* path)
 {
-
-
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded);
@@ -51,7 +53,23 @@ bool World::loadObj(ID3D11Device* device, const char* path)
 	center.y = (minP.y + maxP.y) * 0.5f;
 	center.z = (minP.z + maxP.z) * 0.5f;
 
-	
+	LOG_I("xmaxP: %f, %f, %f \n", maxP.x, maxP.y, maxP.z);
+	LOG_I("xminP: %f, %f, %f \n", minP.x, minP.y, minP.z);
+	LOG_I("center: %f, %f, %f \n", center.x, center.y, center.z);
+
+	XMFLOAT3 size;
+	size.x = maxP.x - minP.x;
+	size.y = maxP.y - minP.y;
+	size.z = maxP.z - minP.z;
+
+	float largest = std::max(size.x, std::max(size.y, size.z));
+	mesh.scale = 10.0f / largest;
+
+	mesh.groundY = (maxP.y - center.y) * mesh.scale;
+
+	LOG_I("Scale: %f\n", mesh.scale);
+	LOG_I("GroundY: %f\n", mesh.groundY);
+
 
 	//create GPU buffer
 	D3D11_BUFFER_DESC bd = {};
@@ -65,6 +83,12 @@ bool World::loadObj(ID3D11Device* device, const char* path)
 	device->CreateBuffer(&bd, &data, &mesh.vertexBuffer);
 	mesh.vertexCount = (UINT)vertices.size();
 
+	//Spawn Player on top of stl
+	Player& player = GetPlayer();
+	player.SetPosition({0, mesh.groundY + player.GetEyeHeight() , 0});
+
+	LOG_I("Player spawned at Y: %f\n", mesh.groundY + player.GetEyeHeight());
+
 	return true;
 }
 
@@ -76,4 +100,24 @@ const WorldMesh& World::getMesh() const
 const XMFLOAT3 World::GetCenter() const
 {
 	return center;
+}
+
+void World::Update(float dt)
+{
+	player.Update(dt);
+}
+
+Player& World::GetPlayer()
+{
+	return player;
+}
+
+float World::GetGroundY() const
+{
+	return mesh.groundY;
+}
+
+float World::GetScale() const
+{
+	return mesh.scale;
 }

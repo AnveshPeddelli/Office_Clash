@@ -31,6 +31,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		Input::OnWheel(wParam);
 		break;
+
+	case WM_KEYDOWN:
+		Input::KeyDown(wParam);
+		break;
+
+	case WM_KEYUP:
+		Input::KeyUp(wParam);
+		break;
 		
 	}
 	
@@ -188,8 +196,17 @@ void Graphics::renderFrame()
 {
 	Clear();
 	
+	/*Player& player = world.GetPlayer();
+	XMFLOAT3 p = player.GetPosition();
+	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f) * XMMatrixTranslation(p.x, p.y, p.z);*/
+
+	const WorldMesh& mesh = world.getMesh();
+	XMFLOAT3 center = world.GetCenter();
+
+	XMMATRIX worldMat = XMMatrixScaling(mesh.scale, mesh.scale, mesh.scale) * XMMatrixTranslation(-center.x, -center.y, -center.z);
+
 	camera.Update();
-	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
+	camera.AttachToPlayer(world.GetPlayer());
 	XMMATRIX view = camera.GetView();
 	XMMATRIX proj = camera.GetProjection(1280.0f / 720.f);
 
@@ -205,8 +222,6 @@ void Graphics::renderFrame()
 	//activating the shader pipeline
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-
-	const WorldMesh& mesh = world.getMesh();
 
 	context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &stride, &offset);
 	context->IASetInputLayout(inputLayout);
@@ -255,4 +270,9 @@ void Graphics::FocusOnWorld()
 {
 	XMFLOAT3 center = world.GetCenter();
 	camera.Focus(center);
+}
+
+void Graphics::Update(float dt)
+{
+	world.Update(dt);
 }

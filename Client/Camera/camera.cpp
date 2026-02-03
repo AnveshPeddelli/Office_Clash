@@ -33,3 +33,15 @@ XMMATRIX Camera::GetProjection(float aspect) const
 {
 	return XMMatrixPerspectiveFovLH(XM_PIDIV4, aspect, 0.1f, 5000.0f);
 }
+
+void Camera::AttachToPlayer(Player& p)
+{
+	XMFLOAT3 pos = p.GetPosition();
+	XMFLOAT3 rot = p.GetPosition();
+
+	XMVECTOR eye = XMLoadFloat3(&pos) + XMVectorSet(0, p.GetEyeHeight(), 0, 0);
+
+	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), XMQuaternionRotationRollPitchYaw(rot.x, rot.y, 0));
+
+	view = XMMatrixLookAtLH(eye, eye + forward, XMVectorSet(0, 1, 0, 0));
+}

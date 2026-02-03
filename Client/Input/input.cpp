@@ -1,4 +1,5 @@
 #include "input.h"
+#include <iostream>
 
 HWND Input::hwnd = nullptr;
 POINT Input::lastPos = {};
@@ -6,6 +7,8 @@ float Input::dx = 0;
 float Input::dy = 0;
 float Input::wheel = 0;
 bool Input::mouseDown = false;
+
+bool Input::keys[256] = {};
 
 void Input::Init(HWND h)
 {
@@ -66,3 +69,22 @@ void Input::EndFrame()
 	dx = dy = wheel = 0;
 }
 
+void Input::KeyDown(WPARAM key)
+{
+	if (key < 256)
+		keys[key] = true;
+}
+
+void Input::KeyUp(WPARAM key)
+{
+	if (key < 256)
+		keys[key] = false;
+}
+
+bool Input::IsKeyDown(int key)
+{
+	if (key < 256)
+		return keys[key];
+
+	return false;
+}

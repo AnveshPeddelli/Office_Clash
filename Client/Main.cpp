@@ -3,18 +3,33 @@
 //int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
+	AllocConsole();
+	FILE* fp;
+	freopen_s(&fp, "CONOUT$", "w", stdout);
+
+	printf("APP STARTED\n");
+	
 	Graphics graphics;
 
 
 	if (!graphics.initWindow(hInstance, nCmdShow))
 		return -1;
+
 	if (!graphics.initDirectX())
 		return -1;
+	
 	if (!graphics.initPipeline())
 		return -1;
 
+	float last = GetTickCount() * 0.001f;
+
 	while (graphics.isRunning())
 	{
+		float now = GetTickCount() * 0.001f;
+		float dt = now - last;
+		last = now;
+		
+		graphics.Update(dt);
 		graphics.renderFrame();
 	}
 
