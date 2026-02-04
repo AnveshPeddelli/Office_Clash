@@ -19,7 +19,7 @@ public:
 private:
 	float yaw = 0;
 	float pitch = 0;
-	float distance = 80;
+	float distance = 0;
 
 	DirectX::XMMATRIX view;
 

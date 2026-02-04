@@ -1,4 +1,6 @@
-﻿  world.cpp
+﻿  graphics.cpp
+  input.cpp
+  Generating Code...
   Client.vcxproj -> C:\Users\p.anvesh\source\repos\Git\Office_Clash\x64\Debug\Client.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

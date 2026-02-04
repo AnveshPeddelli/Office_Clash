@@ -61,6 +61,9 @@ bool Graphics::initWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(hwnd, nCmdShow);
 	Input::Init(hwnd);
+
+	ShowCursor(FALSE);
+
 	return true;
 }
 
@@ -173,7 +176,8 @@ bool Graphics::initPipeline()
 	device->CreateBuffer(&cbd, nullptr, &cameraBuffer);
 
 	//Loading World Obj
-	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
+	//world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
+	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/50x50x10m.obj");
 
 
 	return true;
@@ -189,6 +193,11 @@ bool Graphics::isRunning()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	if (Input::IsKeyDown(VK_ESCAPE))
+	{
+
+	}
 	return true;
 }
 
@@ -202,8 +211,9 @@ void Graphics::renderFrame()
 
 	const WorldMesh& mesh = world.getMesh();
 	XMFLOAT3 center = world.GetCenter();
-
 	XMMATRIX worldMat = XMMatrixScaling(mesh.scale, mesh.scale, mesh.scale) * XMMatrixTranslation(-center.x, -center.y, -center.z);
+
+	LOG_I("World Center: %f, %f, %f", center.x, center.y, center.z);
 
 	camera.Update();
 	camera.AttachToPlayer(world.GetPlayer());

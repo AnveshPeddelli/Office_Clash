@@ -85,7 +85,7 @@ bool World::loadObj(ID3D11Device* device, const char* path)
 
 	//Spawn Player on top of stl
 	Player& player = GetPlayer();
-	player.SetPosition({0, mesh.groundY + player.GetEyeHeight() , 0});
+	player.SetPosition({ center.x, mesh.groundY + player.GetEyeHeight(), -center.z+10});
 
 	LOG_I("Player spawned at Y: %f\n", mesh.groundY + player.GetEyeHeight());
 
@@ -104,7 +104,8 @@ const XMFLOAT3 World::GetCenter() const
 
 void World::Update(float dt)
 {
-	player.Update(dt);
+	player.Update_Mouse();
+	player.Update_Keys(dt);
 }
 
 Player& World::GetPlayer()

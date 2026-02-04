@@ -67,6 +67,19 @@ float Input::GetWheelDelta()
 void Input::EndFrame()
 {
 	dx = dy = wheel = 0;
+
+	RECT rect;
+	GetClientRect(hwnd, &rect);
+
+	POINT center;
+	center.x = (rect.right - rect.left) / 2;
+	center.y = (rect.bottom - rect.top) / 2;
+
+	ClientToScreen(hwnd, &center);
+	SetCursorPos(center.x, center.y);
+
+	lastPos.x = (rect.right - rect.left) / 2;
+	lastPos.y = (rect.bottom - rect.top) / 2;
 }
 
 void Input::KeyDown(WPARAM key)
