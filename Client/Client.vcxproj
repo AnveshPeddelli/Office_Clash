@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props" Condition="Exists('..\packages\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.1.0.0\build\native\vcpkg.C.Users.p.anvesh.source.repos.vcpkgmaster.vcpkgmaster.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -158,15 +158,19 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Input\input.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="Network\client.h" />
+    <ClInclude Include="World\player.h" />
     <ClInclude Include="World\world.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera\camera.cpp" />
     <ClCompile Include="Graphics\graphics.cpp" />
     <ClCompile Include="Input\input.cpp" />
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Network\client.cpp" />
+    <ClCompile Include="World\player.cpp" />
     <ClCompile Include="World\world.cpp" />
   </ItemGroup>
   <ItemGroup>

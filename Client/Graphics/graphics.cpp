@@ -31,6 +31,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		Input::OnWheel(wParam);
 		break;
+
+	case WM_KEYDOWN:
+		Input::KeyDown(wParam);
+		break;
+
+	case WM_KEYUP:
+		Input::KeyUp(wParam);
+		break;
 		
 	}
 	
@@ -53,6 +61,9 @@ bool Graphics::initWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(hwnd, nCmdShow);
 	Input::Init(hwnd);
+
+	ShowCursor(FALSE);
+
 	return true;
 }
 
@@ -89,8 +100,6 @@ bool Graphics::initDirectX()
 
 	device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
 	backBuffer->Release();
-
-	//context->OMSetRenderTargets(1, &renderTarget, nullptr);
 
 	//Depth Buffer Creation
 	D3D11_TEXTURE2D_DESC depthDesc = {};
@@ -167,7 +176,8 @@ bool Graphics::initPipeline()
 	device->CreateBuffer(&cbd, nullptr, &cameraBuffer);
 
 	//Loading World Obj
-	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
+	//world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
+	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/50x50x10m.obj");
 
 
 	return true;
@@ -183,14 +193,30 @@ bool Graphics::isRunning()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	if (Input::IsKeyDown(VK_ESCAPE))
+	{
+
+	}
 	return true;
 }
 
 void Graphics::renderFrame()
 {
-	camera.Update();
+	Clear();
+	
+	/*Player& player = world.GetPlayer();
+	XMFLOAT3 p = player.GetPosition();
+	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f) * XMMatrixTranslation(p.x, p.y, p.z);*/
 
-	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
+	const WorldMesh& mesh = world.getMesh();
+	XMFLOAT3 center = world.GetCenter();
+	XMMATRIX worldMat = XMMatrixScaling(mesh.scale, mesh.scale, mesh.scale) * XMMatrixTranslation(-center.x, -center.y, -center.z);
+
+	LOG_I("World Center: %f, %f, %f", center.x, center.y, center.z);
+
+	camera.Update();
+	camera.AttachToPlayer(world.GetPlayer());
 	XMMATRIX view = camera.GetView();
 	XMMATRIX proj = camera.GetProjection(1280.0f / 720.f);
 
@@ -207,14 +233,14 @@ void Graphics::renderFrame()
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	const WorldMesh& mesh = world.getMesh();
-
 	context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &stride, &offset);
 	context->IASetInputLayout(inputLayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	context->VSSetShader(vertexShader, nullptr, 0);
 	context->PSSetShader(pixelShader, nullptr, 0);
+
+
 
 	////TEMP CPU TRANSFORM (untill matrices)
 	//Vertex transformed[3] = {
@@ -254,4 +280,9 @@ void Graphics::FocusOnWorld()
 {
 	XMFLOAT3 center = world.GetCenter();
 	camera.Focus(center);
+}
+
+void Graphics::Update(float dt)
+{
+	world.Update(dt);
 }
