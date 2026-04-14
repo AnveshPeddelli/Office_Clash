@@ -1,5 +1,4 @@
-#pragma once
-#include "Logger.h"
+#include "logger.h"
 
 void LogColorPrint(LogColor color, const char* fmt, ...)
 {

@@ -3,14 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.36631.11
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OfficeClash", "OfficeClash\OfficeClash.vcxproj", "{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BDDE071D-8953-4194-AE0F-19BEFE6E55D9} = {BDDE071D-8953-4194-AE0F-19BEFE6E55D9}
-		{643B292E-95EC-4BDC-9948-F51AE49D3A5A} = {643B292E-95EC-4BDC-9948-F51AE49D3A5A}
-		{AD7E3679-4885-41AB-8482-87005D064970} = {AD7E3679-4885-41AB-8482-87005D064970}
-		{9C4C83D0-2695-4EEE-B586-4A6BF1362DFF} = {9C4C83D0-2695-4EEE-B586-4A6BF1362DFF}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{0DB0D2D8-1350-4E18-97DA-86B7C67553B8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{643B292E-95EC-4BDC-9948-F51AE49D3A5A}"
@@ -24,7 +16,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E725D82B-000E-422B-8D4D-5247ED4AB42C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		gitignore.txt = gitignore.txt
 	EndProjectSection
 EndProject
 Global
@@ -39,18 +30,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|ARM.ActiveCfg = Debug|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|ARM64.ActiveCfg = Debug|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|x64.ActiveCfg = Debug|x64
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|x64.Build.0 = Debug|x64
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|x86.ActiveCfg = Debug|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Debug|x86.Build.0 = Debug|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|ARM.ActiveCfg = Release|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|ARM64.ActiveCfg = Release|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|x64.ActiveCfg = Release|x64
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|x64.Build.0 = Release|x64
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|x86.ActiveCfg = Release|Win32
-		{CB6070CB-BB9B-4697-8BE4-D35C58B4F3E1}.Release|x86.Build.0 = Release|Win32
 		{0DB0D2D8-1350-4E18-97DA-86B7C67553B8}.Debug|ARM.ActiveCfg = Debug|Win32
 		{0DB0D2D8-1350-4E18-97DA-86B7C67553B8}.Debug|ARM64.ActiveCfg = Debug|Win32
 		{0DB0D2D8-1350-4E18-97DA-86B7C67553B8}.Debug|x64.ActiveCfg = Debug|x64

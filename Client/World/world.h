@@ -4,6 +4,7 @@
 #include "../logger.h"
 #include "player.h"
 
+#include <filesystem>
 #include <vector>
 #include <algorithm>
 #include <d3d11.h>
@@ -28,13 +29,14 @@ struct WorldMesh
 class World
 {
 public:
-	bool loadObj(ID3D11Device* device, const char* path);
+	bool loadObj(ID3D11Device* device, const std::filesystem::path& path);
 	const WorldMesh& getMesh() const;
 	float GetGroundY() const;
 	float GetScale() const;
 
 	const XMFLOAT3 GetCenter() const;
 
+	void Shutdown();
 	void Update(float dt);
 	Player& GetPlayer();
 

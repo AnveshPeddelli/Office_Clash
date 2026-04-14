@@ -1,6 +1,19 @@
 #include <iostream>
 #include <string>
+#include <cstdint>
+
+#if defined(OFFICECLASH_WITH_ENET)
 #include <enet/enet.h>
+#else
+struct ENetAddress
+{
+	std::uint32_t host = 0;
+	std::uint16_t port = 0;
+};
+
+struct ENetHost;
+struct ENetPeer;
+#endif
 
 
 
@@ -21,12 +34,12 @@ private:
 
 
 private:
-	char client_ip[32];
+	char client_ip[32] = {};
 
 	ENetHost* client_m = nullptr;
 	ENetPeer* peer_m = nullptr;
-	ENetAddress serverAddress_m;
-	int host_port_m;
-	char server_ip[32];
+	ENetAddress serverAddress_m{};
+	int host_port_m = 0;
+	char server_ip[32] = {};
 };
 

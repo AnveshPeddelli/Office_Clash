@@ -1,6 +1,6 @@
 #include "camera.h"
 #include "../Input/input.h"
-#include "../logger.h"
+#include <algorithm>
 
 void Camera::Update()
 {
@@ -12,8 +12,8 @@ void Camera::Update()
 
 	distance -= Input::GetWheelDelta() * 3.0f;
 
-	pitch = max(-1.5f, min(1.5f, pitch));
-	distance = max(5.0f, min(500.0f, distance));
+	pitch = std::clamp(pitch, -1.5f, 1.5f);
+	distance = std::clamp(distance, 5.0f, 500.0f);
 
 	
 
@@ -43,10 +43,6 @@ void Camera::AttachToPlayer(Player& p)
 	XMFLOAT3 pos = p.GetPosition();
 	XMFLOAT3 rot = p.GetRotation();
 	float eyeHeight = p.GetEyeHeight();
-
-	LOG_I("Position: %f, %f, %f\n", pos.x, pos.y, pos.z);
-	LOG_I("Rotation: % f, % f, % f\n", rot.x, rot.y, rot.z);
-	LOG_I("EyeHeight: % f\n", eyeHeight);
 
 	XMVECTOR eye = XMLoadFloat3(&pos) + XMVectorSet(0, eyeHeight, 0, 0);
 	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), XMQuaternionRotationRollPitchYaw(rot.x, rot.y, 0));

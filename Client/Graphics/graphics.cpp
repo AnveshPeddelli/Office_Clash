@@ -1,8 +1,50 @@
 #include "graphics.h"
 #include <d3dcompiler.h>
+#include <filesystem>
 #pragma comment(lib, "d3dcompiler.lib")
 
 #include "../Input/input.h"
+
+namespace
+{
+	std::filesystem::path FindWorkspaceRootFrom(const std::filesystem::path& start)
+	{
+		std::error_code ec;
+		std::filesystem::path current = start;
+		while (!current.empty())
+		{
+			if (std::filesystem::exists(current / L"OfficeClash.sln", ec))
+				return current;
+
+			if (current == current.root_path())
+				break;
+
+			current = current.parent_path();
+		}
+
+		return {};
+	}
+
+	std::filesystem::path FindWorkspaceRoot()
+	{
+		if (const auto currentPath = FindWorkspaceRootFrom(std::filesystem::current_path()); !currentPath.empty())
+			return currentPath;
+
+		wchar_t modulePath[MAX_PATH] = {};
+		if (GetModuleFileNameW(nullptr, modulePath, MAX_PATH) != 0)
+		{
+			if (const auto moduleRoot = FindWorkspaceRootFrom(std::filesystem::path(modulePath).parent_path()); !moduleRoot.empty())
+				return moduleRoot;
+		}
+
+		return std::filesystem::current_path();
+	}
+
+	std::filesystem::path ResolveAssetPath(const std::filesystem::path& relativePath)
+	{
+		return FindWorkspaceRoot() / relativePath;
+	}
+}
 
 
 //Window callback
@@ -139,18 +181,28 @@ bool Graphics::initPipeline()
 	ID3DBlob* psBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 
-	HRESULT hr = D3DCompileFromFile(L"C:/Users/p.anvesh/source/repos/Git/Office_Clash/Client/triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
+	const auto shaderPath = ResolveAssetPath(std::filesystem::path(L"Client") / L"triangle.hlsl");
+	const auto worldPath = ResolveAssetPath(std::filesystem::path(L"BlenderObjs") / L"World" / L"50x50x10m.obj");
+
+	HRESULT hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
+		{
 			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
+			errorBlob->Release();
+		}
 		return false;
 	}
-	hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &psBlob, &errorBlob);
+
+	hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &psBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
+		{
 			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
+			errorBlob->Release();
+		}
 		return false;
 	}
 
@@ -176,8 +228,11 @@ bool Graphics::initPipeline()
 	device->CreateBuffer(&cbd, nullptr, &cameraBuffer);
 
 	//Loading World Obj
-	//world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
-	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/50x50x10m.obj");
+	if (!world.loadObj(device, worldPath))
+	{
+		MessageBoxW(0, L"Failed to load world geometry.", L"World Load Error", 0);
+		return false;
+	}
 
 
 	return true;
@@ -212,8 +267,6 @@ void Graphics::renderFrame()
 	const WorldMesh& mesh = world.getMesh();
 	XMFLOAT3 center = world.GetCenter();
 	XMMATRIX worldMat = XMMatrixScaling(mesh.scale, mesh.scale, mesh.scale) * XMMatrixTranslation(-center.x, -center.y, -center.z);
-
-	LOG_I("World Center: %f, %f, %f", center.x, center.y, center.z);
 
 	camera.Update();
 	camera.AttachToPlayer(world.GetPlayer());
@@ -262,8 +315,17 @@ void Graphics::renderFrame()
 
 void Graphics::shutdown()
 {
+	world.Shutdown();
+
+	if (cameraBuffer) cameraBuffer->Release();
+	if (inputLayout) inputLayout->Release();
+	if (pixelShader) pixelShader->Release();
+	if (vertexShader) vertexShader->Release();
+	if (depthView) depthView->Release();
+	if (depthBuffer) depthBuffer->Release();
 	if (renderTarget) renderTarget->Release();
 	if (swapChain) swapChain->Release();
+	if (context) context->ClearState();
 	if (context) context->Release();
 	if (device) device->Release();
 	if (hwnd) DestroyWindow(hwnd);
