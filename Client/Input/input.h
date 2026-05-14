@@ -12,6 +12,10 @@ public:
 	static void OnMouseUp(WPARAM btn);
 	static void OnWheel(WPARAM wparam);
 
+	static void KeyDown(WPARAM key);
+	static void KeyUp(WPARAM key);
+	static bool IsKeyDown(int key);
+
 	static bool IsMouseDown();
 	static float GetDeltaX();
 	static float GetDeltaY();
@@ -26,4 +30,6 @@ private:
 	static float dx, dy;
 	static float wheel;
 	static bool mouseDown;
+
+	static bool keys[256];
 };

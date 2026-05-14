@@ -1,5 +1,6 @@
-#include "Server.h"
+#include "server.h"
 
+#if defined(OFFICECLASH_WITH_ENET)
 Server::Server()
 {
 	if (enet_initialize() != 0)
@@ -50,6 +51,7 @@ void Server::run()
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				std::cout << "Message from Clinet: " << (char*)_event.packet->data << std::endl;
+				enet_packet_destroy(_event.packet);
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				std::cout << "Client Disconnected" << std::endl;
@@ -143,5 +145,23 @@ int main()
 //
 //	delete server;
 //
-//	return EXIT_SUCCESS;
+	//	return EXIT_SUCCESS;
 //}
+#else
+Server::Server() = default;
+
+Server::~Server() = default;
+
+void Server::run()
+{
+	std::cout << "Server networking is disabled in this build.\n";
+	std::cout << "Restore ENet and define OFFICECLASH_WITH_ENET to enable multiplayer.\n";
+}
+
+int main()
+{
+	Server server;
+	server.run();
+	return 0;
+}
+#endif

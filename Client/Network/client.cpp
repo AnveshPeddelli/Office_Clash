@@ -1,5 +1,7 @@
 #include "client.h"
+#include <cstdio>
 
+#if defined(OFFICECLASH_WITH_ENET)
 static bool enetInitialized = false;
 
 Client::Client()
@@ -47,6 +49,7 @@ void Client::setHostAddressPort(const ENetAddress& address, std::string ip)
 		std::cout << "Failed to Create ENet Client" << std::endl;
 		return;
 	}
+	std::snprintf(server_ip, sizeof(server_ip), "%s", ip.c_str());
 	std::cout << "Connected to server IP: " << server_ip << " Port: " << address.port << std::endl;
 
 	//Setting local ip address for display purposes
@@ -61,8 +64,6 @@ bool Client::checkConnectionStatus()
 		std::cerr << client_ip << " Failed to connect to server!\n";
 		return false;
 	}
-
-	auto stst = startMessaging();
 
 	ENetEvent _event;
 	if (enet_host_service(client_m, &_event, 5000) > 0 && _event.type == ENET_EVENT_TYPE_CONNECT)
@@ -166,6 +167,39 @@ bool Client::startMessaging()
 	//	}
 	//}
 }
+#else
+Client::Client()
+{
+	std::cout << "ENet support is disabled in this build.\n";
+}
+
+Client::~Client() = default;
+
+void Client::setHostAddressPort(const ENetAddress& address, std::string ip)
+{
+	serverAddress_m = address;
+	host_port_m = address.port;
+	std::snprintf(server_ip, sizeof(server_ip), "%s", ip.c_str());
+	setLocalClientIP();
+}
+
+bool Client::checkConnectionStatus()
+{
+	std::cout << "Skipping client connection because ENet is not enabled.\n";
+	return false;
+}
+
+void Client::setLocalClientIP()
+{
+	std::snprintf(client_ip, sizeof(client_ip), "127.0.0.1");
+}
+
+bool Client::startMessaging()
+{
+	std::cout << "Client messaging is unavailable without ENet.\n";
+	return false;
+}
+#endif
 
 
 

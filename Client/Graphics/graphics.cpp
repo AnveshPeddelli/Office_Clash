@@ -1,8 +1,50 @@
 #include "graphics.h"
 #include <d3dcompiler.h>
+#include <filesystem>
 #pragma comment(lib, "d3dcompiler.lib")
 
 #include "../Input/input.h"
+
+namespace
+{
+	std::filesystem::path FindWorkspaceRootFrom(const std::filesystem::path& start)
+	{
+		std::error_code ec;
+		std::filesystem::path current = start;
+		while (!current.empty())
+		{
+			if (std::filesystem::exists(current / L"OfficeClash.sln", ec))
+				return current;
+
+			if (current == current.root_path())
+				break;
+
+			current = current.parent_path();
+		}
+
+		return {};
+	}
+
+	std::filesystem::path FindWorkspaceRoot()
+	{
+		if (const auto currentPath = FindWorkspaceRootFrom(std::filesystem::current_path()); !currentPath.empty())
+			return currentPath;
+
+		wchar_t modulePath[MAX_PATH] = {};
+		if (GetModuleFileNameW(nullptr, modulePath, MAX_PATH) != 0)
+		{
+			if (const auto moduleRoot = FindWorkspaceRootFrom(std::filesystem::path(modulePath).parent_path()); !moduleRoot.empty())
+				return moduleRoot;
+		}
+
+		return std::filesystem::current_path();
+	}
+
+	std::filesystem::path ResolveAssetPath(const std::filesystem::path& relativePath)
+	{
+		return FindWorkspaceRoot() / relativePath;
+	}
+}
 
 
 //Window callback
@@ -31,6 +73,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		Input::OnWheel(wParam);
 		break;
+
+	case WM_KEYDOWN:
+		Input::KeyDown(wParam);
+		break;
+
+	case WM_KEYUP:
+		Input::KeyUp(wParam);
+		break;
 		
 	}
 	
@@ -53,6 +103,9 @@ bool Graphics::initWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(hwnd, nCmdShow);
 	Input::Init(hwnd);
+
+	ShowCursor(FALSE);
+
 	return true;
 }
 
@@ -89,8 +142,6 @@ bool Graphics::initDirectX()
 
 	device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
 	backBuffer->Release();
-
-	//context->OMSetRenderTargets(1, &renderTarget, nullptr);
 
 	//Depth Buffer Creation
 	D3D11_TEXTURE2D_DESC depthDesc = {};
@@ -130,18 +181,28 @@ bool Graphics::initPipeline()
 	ID3DBlob* psBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 
-	HRESULT hr = D3DCompileFromFile(L"C:/Users/p.anvesh/source/repos/Git/Office_Clash/Client/triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
+	const auto shaderPath = ResolveAssetPath(std::filesystem::path(L"Client") / L"triangle.hlsl");
+	const auto worldPath = ResolveAssetPath(std::filesystem::path(L"BlenderObjs") / L"World" / L"50x50x10m.obj");
+
+	HRESULT hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
+		{
 			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
+			errorBlob->Release();
+		}
 		return false;
 	}
-	hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &psBlob, &errorBlob);
+
+	hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &psBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
+		{
 			MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), "Shader Error", 0);
+			errorBlob->Release();
+		}
 		return false;
 	}
 
@@ -167,7 +228,11 @@ bool Graphics::initPipeline()
 	device->CreateBuffer(&cbd, nullptr, &cameraBuffer);
 
 	//Loading World Obj
-	world.loadObj(device, "C:/Users/p.anvesh/source/repos/Git/Office_Clash/BlenderObjs/World/world.obj");
+	if (!world.loadObj(device, worldPath))
+	{
+		MessageBoxW(0, L"Failed to load world geometry.", L"World Load Error", 0);
+		return false;
+	}
 
 
 	return true;
@@ -183,14 +248,28 @@ bool Graphics::isRunning()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	if (Input::IsKeyDown(VK_ESCAPE))
+	{
+
+	}
 	return true;
 }
 
 void Graphics::renderFrame()
 {
-	camera.Update();
+	Clear();
+	
+	/*Player& player = world.GetPlayer();
+	XMFLOAT3 p = player.GetPosition();
+	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f) * XMMatrixTranslation(p.x, p.y, p.z);*/
 
-	XMMATRIX worldMat = XMMatrixScaling(0.05f, 0.05f, 0.05f);
+	const WorldMesh& mesh = world.getMesh();
+	XMFLOAT3 center = world.GetCenter();
+	XMMATRIX worldMat = XMMatrixScaling(mesh.scale, mesh.scale, mesh.scale) * XMMatrixTranslation(-center.x, -center.y, -center.z);
+
+	camera.Update();
+	camera.AttachToPlayer(world.GetPlayer());
 	XMMATRIX view = camera.GetView();
 	XMMATRIX proj = camera.GetProjection(1280.0f / 720.f);
 
@@ -207,14 +286,14 @@ void Graphics::renderFrame()
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	const WorldMesh& mesh = world.getMesh();
-
 	context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &stride, &offset);
 	context->IASetInputLayout(inputLayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	context->VSSetShader(vertexShader, nullptr, 0);
 	context->PSSetShader(pixelShader, nullptr, 0);
+
+
 
 	////TEMP CPU TRANSFORM (untill matrices)
 	//Vertex transformed[3] = {
@@ -236,8 +315,17 @@ void Graphics::renderFrame()
 
 void Graphics::shutdown()
 {
+	world.Shutdown();
+
+	if (cameraBuffer) cameraBuffer->Release();
+	if (inputLayout) inputLayout->Release();
+	if (pixelShader) pixelShader->Release();
+	if (vertexShader) vertexShader->Release();
+	if (depthView) depthView->Release();
+	if (depthBuffer) depthBuffer->Release();
 	if (renderTarget) renderTarget->Release();
 	if (swapChain) swapChain->Release();
+	if (context) context->ClearState();
 	if (context) context->Release();
 	if (device) device->Release();
 	if (hwnd) DestroyWindow(hwnd);
@@ -254,4 +342,9 @@ void Graphics::FocusOnWorld()
 {
 	XMFLOAT3 center = world.GetCenter();
 	camera.Focus(center);
+}
+
+void Graphics::Update(float dt)
+{
+	world.Update(dt);
 }

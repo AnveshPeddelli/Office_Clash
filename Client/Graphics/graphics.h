@@ -35,6 +35,8 @@ public:
 	void shutdown();
 	void FocusOnWorld();
 
+	void Update(float dt);
+
 private:
 	HWND hwnd = nullptr;
 	bool running = true;
